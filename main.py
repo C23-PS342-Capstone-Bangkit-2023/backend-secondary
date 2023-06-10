@@ -9,11 +9,12 @@ from sklearn.neighbors import NearestNeighbors
 import numpy as np
 import pandas as pd
 import joblib
+import json
 
 tfidf_model = joblib.load('tfidf_model.pkl')
 model = joblib.load('knn_model.pkl')
 
-@app.route('/create', methods=['POST'])
+@app.route('/sugestion', methods=['POST'])
 def recommend():
     try:
         _json = request.json
@@ -24,11 +25,13 @@ def recommend():
         user_query_embedding = tfidf_model.transform(_namaMakanan).toarray()
         distances, indices = model.kneighbors(user_query_embedding)
         top_recommended_items = df.iloc[indices[0]]
-        response = { "data": top_recommended_items.to_dict(orient='records')}
-        return jsonify(response)
+        sendData = top_recommended_items['id']
+        # print()
+        response = sendData.to_json()
+        return response
     except Exception as e:
         print(e)
-        return "a string"
+        return jsonify({"data" : []})
 
 @app.errorhandler(404)
 def showMessage(error=None):
